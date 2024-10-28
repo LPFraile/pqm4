@@ -346,3 +346,139 @@ crypto_sign_open(unsigned char *m, size_t *mlen,
 	*mlen = msg_len;
 	return 0;
 }
+
+/* --------------------------------------------- ADDED EXTRA FUNCTIONS ----------------------------------------------------*/
+
+/*************************************************
+* Name:        falcon_crypto_sign_signature
+*
+* Description: Computes signature.
+*
+* Arguments:   - unsigned char *sig: pointer to output signature
+*              - size_t *siglen: pointer to output length of signature
+*              - const unsigned char *m: pointer to message to be signed
+*              - size_t mlen: length of message
+*              - const unsigned char *sk: pointer to secret key
+*
+* Returns 0 (success)
+**************************************************/
+int crypto_sign_signature(
+	unsigned char *sig, size_t *siglen,
+    const unsigned char *m, size_t mlen, const unsigned char *sk)
+{
+	int ret = -1;
+
+	// signature size
+	unsigned int sSz;
+
+	//				   (length BE + nonce sz + msg sz + header + sSz)
+	unsigned int smlen = (  2 	  + NONCELEN + mlen   +    1   + CRYPTO_BYTES);
+
+	unsigned char sm[smlen];
+	ret = crypto_sign(sm, &smlen, m, mlen, sk);
+	if( ret != 0){
+		return ret;
+	}
+
+	//
+	// build signature encoding as Falcon's specifications indicates.
+	//
+
+	// index inside sig
+	unsigned int idx = 0;
+
+	// header
+#if 1 == 1
+	*sig = 0x39;
+#elif FALCON_SECURITY_LEVEL == 5
+	*sig = 0x3a;
+#endif
+	idx += 1;
+
+	// nonce r
+	memcpy(sig + idx, sm + 2, NONCELEN);
+	idx += NONCELEN;
+
+	// signature s
+	sSz = ((size_t)sm[0] << 8) | (size_t)sm[1];
+	sSz -= 1;
+	memcpy(sig + idx, sm + 2 + NONCELEN + mlen + 1, sSz);
+	idx += sSz;
+
+	// signature size
+	*siglen = sSz + NONCELEN + 1;
+
+
+	return ret;
+
+}
+
+/*************************************************
+* Name:        falcon_crypto_sign_verify
+*
+* Description: Verifies signature.
+*
+* Arguments:   - const unsigned char *sig: pointer to input signature
+*              - size_t siglen: length of signature
+*              - unsigned char *m: pointer to message
+*              - size_t mlen: length of message
+*              - const unsigned char *pk: pointer to bit-packed public key
+*
+* Returns 0 if signature could be verified correctly and -1 otherwise
+**************************************************/
+int crypto_sign_verify(
+    const unsigned char *sig, size_t siglen,
+    unsigned char *m, size_t mlen, const unsigned char *pk)
+{
+	int ret;
+
+  	//				totalSize 	- (header size + nonce size)
+	unsigned int sSz = siglen 	- (		1	   + NONCELEN );
+
+	//			 	  (length BE  + nonce sz + msg sz + header + sSz)
+	unsigned int smlen = (  2 	  + NONCELEN + mlen   +    1   + sSz);
+
+	unsigned char sm[smlen];
+
+	// index inside sm
+	unsigned int idx = 0;
+
+	//
+	// build the sm as NIST specifies
+	//
+
+
+	// header for signature length
+
+	// sSz must be 2 bytes big-endian
+	*sm		 = ((sSz + 1) >> 8) & 255;
+	*(sm + 1)	 = (sSz + 1) & 255;
+	idx += 2;
+
+	// nonce (40bytes)
+	memcpy (sm + idx, sig + 1, NONCELEN);
+	idx += NONCELEN;
+
+	// message data
+	memcpy(sm + idx, m, mlen);
+	idx += mlen;
+
+	// header of signature
+	*(sm + idx) = *sig - 0x10;
+	idx += 1;
+
+	// signature
+	memcpy(sm + idx, sig + 1 + NONCELEN, sSz);
+	idx += sSz;
+
+
+	// verify the signature
+	ret = crypto_sign_open(m, &mlen, sm, smlen, pk);
+
+	return ret;
+
+}
+
+
+/* --------------------------------------------- ADDED EXTRA FUNCTIONS ENDS HERE ---------------------------------------------*/
+

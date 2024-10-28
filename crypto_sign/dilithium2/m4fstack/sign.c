@@ -126,6 +126,10 @@ int crypto_sign_signature(uint8_t *sig,
                           size_t mlen,
                           const uint8_t *sk)
 {
+ // printf("dilithium m4fstack\n");
+  //print_array(m,mlen);
+  //print_array(sk,CRYPTO_SECRETKEYBYTES);
+  //printf("sign len in %d\n",*siglen);
   uint8_t buf[2 * CRHBYTES];
   uint8_t *mu, *rhoprime, *rnd;
   const uint8_t *rho, *tr, *key;
@@ -158,6 +162,8 @@ int crypto_sign_signature(uint8_t *sig,
   mu = buf;
   rnd = mu + CRHBYTES;
   rhoprime = mu + CRHBYTES;
+  //printf("rh0:");
+  //print_array(rho,SEEDBYTES);
   unpack_sk_stack(rho, tr, key, sk);
 
   /* Compute mu = CRH(tr, msg) */
@@ -237,8 +243,8 @@ rej:
 
       polyz_pack(sig + CTILDEBYTES + l_idx*POLYZ_PACKEDBYTES, tmp0);
   }
-
-
+  
+ // printf("before write signature\n");
   /* Write signature */
   unsigned int hint_n = 0;
   unsigned int hints_written = 0;

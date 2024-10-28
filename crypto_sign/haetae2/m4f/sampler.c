@@ -163,7 +163,7 @@ unsigned int rej_eta(int32_t *a, unsigned int len, const uint8_t *buf,
 
 static inline uint16_t read_gauss16_asm(const uint8_t src[GAUSS_RAND_BYTES]){
     uint16_t result;
-    asm(
+    __asm__ volatile(
         "ldrh   %[dest], [%[ptr]]":
         [dest] "=r" (result):
         [ptr] "r" (src)
@@ -174,7 +174,7 @@ static inline uint16_t read_gauss16_asm(const uint8_t src[GAUSS_RAND_BYTES]){
 static fp63_48 read_rej_asm(const uint8_t src[GAUSS_RAND_BYTES]){
     uint32_t result_lo;
     uint32_t result_hi;
-    asm(
+    __asm__ volatile(
         "ldrh   %[hi], [%[ptr], #6]\n\t"
         "ldr    %[lo], [%[ptr], #2]":
         [lo] "=r" (result_lo), [hi] "=r" (result_hi):
@@ -201,7 +201,7 @@ static inline void read_y(fp84_76* y, const uint8_t src[GAUSS_RAND_BYTES]){
     uint32_t result_md;
     uint32_t result_hi;
 
-    asm(
+    __asm__ volatile(
         "ldr    %[lo], [%[ptr],  #8]\n\t"   // read bytes  8-11 
         "ldr    %[md], [%[ptr], #11]\n\t"   // read bytes 11-14
         "ldrh   %[hi], [%[ptr], #15]\n\t"   // read bytes 15-16

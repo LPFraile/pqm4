@@ -444,9 +444,14 @@ void unpack_sk_stack(uint8_t rho[SEEDBYTES],
                const uint8_t sk[CRYPTO_SECRETKEYBYTES])
 {
   unsigned int i;
-
-  for(i = 0; i < SEEDBYTES; ++i)
+ // printf("SEEDBYTES %d\n",SEEDBYTES);
+ // printf("CRYPTO_SECRETKEYBYTES %d\n",CRYPTO_SECRETKEYBYTES);
+  //print_array(sk,CRYPTO_SECRETKEYBYTES);
+  for(i = 0; i < SEEDBYTES; ++i){
+    //printf("i:%d\n",i);
     rho[i] = sk[i];
+  }
+    
   sk += SEEDBYTES;
 
   for(i = 0; i < SEEDBYTES; ++i)

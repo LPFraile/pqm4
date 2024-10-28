@@ -15,3 +15,15 @@ int crypto_sign(unsigned char *sm, size_t *smlen,
 int crypto_sign_open(unsigned char *m, size_t *mlen,
 	const unsigned char *sm, size_t smlen,
 	const unsigned char *pk);
+
+/* ------------------------- ADDED EXTRA FUNCTIONS ----------------------- */
+
+int crypto_sign_signature(
+	unsigned char *sig, size_t *siglen,
+    const unsigned char *m, size_t mlen, const unsigned char *sk);
+
+int crypto_sign_verify(
+    const unsigned char *sig, size_t siglen,
+    unsigned char *m, size_t mlen, const unsigned char *pk);
+
+/* ----------------------------------------------------------------------- */

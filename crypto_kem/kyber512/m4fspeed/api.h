@@ -9,6 +9,7 @@
 #define CRYPTO_BYTES           KYBER_SSBYTES
 
 #define CRYPTO_ALGNAME "Kyber512"
+#define PQM4
 
 int crypto_kem_keypair(unsigned char *pk, unsigned char *sk);
 

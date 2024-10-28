@@ -271,15 +271,22 @@ int crypto_sign_verify(const uint8_t *sig,
   shake256incctx state;
 
   poly tmp_elem, w1_elem;
+  printf("Dilithium verify\n");
 
-  if (siglen != CRYPTO_BYTES)
-    return -1;
-
-  if (unpack_sig_z(&z, sig) != 0) {
+  if (siglen != CRYPTO_BYTES){
+    printf("1\n");
     return -1;
   }
-  if (polyvecl_chknorm(&z, GAMMA1 - BETA))
+    
+
+  if (unpack_sig_z(&z, sig) != 0) {
+    printf("2\n");
     return -1;
+  }
+  if (polyvecl_chknorm(&z, GAMMA1 - BETA)){
+    printf("3\n");
+    return -1;
+  }
 
   /* Compute CRH(h(rho, t1), msg) */
   shake256(mu, CRHBYTES, pk, CRYPTO_PUBLICKEYBYTES);
@@ -295,6 +302,7 @@ int crypto_sign_verify(const uint8_t *sig,
 
   /* Matrix-vector multiplication; compute Az - c2^dt1 */
   if (unpack_sig_c(c, sig) != 0) {
+    printf("4\n");
     return -1;
   }
   poly_challenge(&cp, c);
@@ -340,8 +348,12 @@ int crypto_sign_verify(const uint8_t *sig,
   shake256_inc_finalize(&state);
   shake256_inc_squeeze(c2, CTILDEBYTES, &state);
   for (i = 0; i < CTILDEBYTES; ++i)
-    if (c[i] != c2[i])
+    if (c[i] != c2[i]){
+      printf("5 \n");
+      printf("c%d: %d c2%d: %d  \n",i,c[i],i,c2[i]);
       return -1;
+    }
+      
 
   return 0;
 }
